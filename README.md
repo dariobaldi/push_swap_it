@@ -1,3 +1,3 @@
 # push_swap_it
 
-A new Flutter project.
+A very basic game to try push swap visually.

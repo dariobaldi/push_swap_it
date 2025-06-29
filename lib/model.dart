@@ -245,6 +245,7 @@ class Model extends ChangeNotifier {
           .toSet()
           .map(int.parse)
           .toList();
+      _level = numbers.length;
       _a = [];
       _b = [];
       _commands = [];

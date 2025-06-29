@@ -20,6 +20,7 @@ class Model extends ChangeNotifier {
   bool _debug = false;
   int _best = 0;
   int _level = 5;
+  final TextEditingController _controller = TextEditingController();
 
   Model();
 
@@ -30,6 +31,7 @@ class Model extends ChangeNotifier {
   bool get debug => _debug;
   int get best => _best;
   int get level => _level;
+  TextEditingController get controller => _controller;
 
   void chageDebug(bool value) {
     _debug = value;
@@ -232,6 +234,51 @@ class Model extends ChangeNotifier {
     if (_best == 0 || _best > _commands.length) {
       _best = _commands.length;
     }
+  }
+
+  void inputText(BuildContext context) {
+    _solved = false;
+    try {
+      final numbers = _controller.text
+          .trim()
+          .split(RegExp(r'\s+'))
+          .toSet()
+          .map(int.parse)
+          .toList();
+      _a = [];
+      _b = [];
+      _commands = [];
+      _original = [];
+      for (var i = 0; i < numbers.length; i++) {
+        _a.add(Node(value: numbers[i], position: i, order: i));
+        _original.add(_a.last);
+      }
+      checkSolved();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.error),
+              const SizedBox(width: 5),
+              Expanded(
+                child: Text(
+                  "Invalid input: $e",
+                  maxLines: 10,
+                  overflow: TextOverflow.clip,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onError,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
+    notifyListeners();
   }
 }
 

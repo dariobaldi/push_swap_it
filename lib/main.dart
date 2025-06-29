@@ -12,6 +12,31 @@ void main() {
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
 
+  void inputText(BuildContext context, Model m) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Input Values"),
+        content: TextField(controller: m.controller),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () {
+              m.inputText(context);
+              Navigator.of(context).pop();
+            },
+            child: const Text("Save"),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -32,6 +57,15 @@ class MainApp extends StatelessWidget {
                   child: ActionChip(
                     label: Icon(Icons.shuffle),
                     onPressed: m.refresh,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(3.0),
+                  child: ActionChip(
+                    label: Icon(Icons.input),
+                    onPressed: () {
+                      inputText(context, m);
+                    },
                   ),
                 ),
                 Padding(

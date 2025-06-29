@@ -118,20 +118,20 @@ class Model extends ChangeNotifier {
     _a[1] = buf;
   }
 
-  void pa() {
+  void pb() {
     if (_a.isEmpty) {
       return;
     }
-    _commands.add("pa");
+    _commands.add("pb");
     _b.insert(0, _a[0]);
     _a.removeAt(0);
   }
 
-  void pb() {
+  void pa() {
     if (_b.isEmpty) {
       return;
     }
-    _commands.add("pb");
+    _commands.add("pa");
     _a.insert(0, _b[0]);
     _b.removeAt(0);
   }

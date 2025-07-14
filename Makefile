@@ -9,3 +9,14 @@ deploy:
 	git commit -m "$$MESSAGE" && \
 	git push && \
 	cd ../push_swap_it
+
+.PHONY: tester
+tester:
+	GOOS=linux GOARCH=amd64 \
+	go build -o tester ./bridge/main.go
+	mv ./tester ../push_swap/tester
+
+.PHONY: tester/mac
+tester/mac:
+	go build -o tester ./bridge/main.go
+	mv ./tester ../push_swap/tester_mac

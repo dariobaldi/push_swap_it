@@ -21,6 +21,13 @@ class MainApp extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () {
+              m.inputSorted(context);
+              Navigator.of(context).pop();
+            },
+            child: const Text("Sorted"),
+          ),
+          TextButton(
+            onPressed: () {
               Navigator.of(context).pop();
             },
             child: const Text("Cancel"),
@@ -30,7 +37,7 @@ class MainApp extends StatelessWidget {
               m.inputText(context);
               Navigator.of(context).pop();
             },
-            child: const Text("Save"),
+            child: const Text("Input"),
           ),
         ],
       ),
@@ -45,6 +52,15 @@ class MainApp extends StatelessWidget {
           return Scaffold(
             appBar: AppBar(
               actions: [
+                Padding(
+                  padding: const EdgeInsets.all(3.0),
+                  child: ActionChip(
+                    label: Icon(Icons.copy_all),
+                    onPressed: () {
+                      m.copyStartValues(context);
+                    },
+                  ),
+                ),
                 Padding(
                   padding: const EdgeInsets.all(3.0),
                   child: ActionChip(
@@ -111,9 +127,7 @@ class MainApp extends StatelessWidget {
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          NumberSquare(
-                                            number: m.a[index].value,
-                                          ),
+                                          NumberSquare(node: m.a[index]),
                                           if (m.debug)
                                             Padding(
                                               padding: const EdgeInsets.all(
@@ -141,9 +155,7 @@ class MainApp extends StatelessWidget {
                                   ...List.generate(m.b.length, (index) {
                                     return Padding(
                                       padding: const EdgeInsets.all(8.0),
-                                      child: NumberSquare(
-                                        number: m.b[index].value,
-                                      ),
+                                      child: NumberSquare(node: m.b[index]),
                                     );
                                   }),
                                 ],
@@ -220,14 +232,15 @@ class MainApp extends StatelessWidget {
 }
 
 class NumberSquare extends StatelessWidget {
-  final int number;
-  const NumberSquare({super.key, required this.number});
+  final Node node;
+  const NumberSquare({super.key, required this.node});
 
   @override
   Widget build(BuildContext context) {
     return FloatingActionButton(
+      backgroundColor: (node.isSorted) ? Colors.lightGreen : null,
       onPressed: () {},
-      child: Text(number.toString()),
+      child: Text(node.value.toString()),
     );
   }
 }

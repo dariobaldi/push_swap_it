@@ -1,18 +1,25 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:push_swap_it/sort.dart';
 
 class Node {
   final int value;
   final int position;
   int order;
+  bool isSorted;
 
-  Node({required this.value, required this.position, required this.order});
+  Node({
+    required this.value,
+    required this.position,
+    required this.order,
+    this.isSorted = false,
+  });
 }
 
 class Model extends ChangeNotifier {
-  List<Node> _a = generateUniqueRandomInts(count: 5, min: 0, max: 5);
+  List<Node> _a = generateUniqueRandomInts(count: 5, min: 1, max: 5);
   List<Node> _b = [];
   List<Node> _original = [];
   List<String> _commands = [];
@@ -195,7 +202,7 @@ class Model extends ChangeNotifier {
   }
 
   void refresh() {
-    _a = generateUniqueRandomInts(count: _level, min: 0, max: _level);
+    _a = generateUniqueRandomInts(count: _level, min: 1, max: _level);
     _b = [];
     _commands = [];
     _original = [];
@@ -216,6 +223,7 @@ class Model extends ChangeNotifier {
     _commands = [];
     _solved = false;
     for (var node in _original) {
+      node.isSorted = false;
       _a.add(node);
     }
     notifyListeners();
@@ -280,6 +288,84 @@ class Model extends ChangeNotifier {
       );
     }
     notifyListeners();
+  }
+
+  void inputSorted(BuildContext context) {
+    try {
+      if (_b.isNotEmpty) {
+        throw Exception('Stack be must be empty for sorted input');
+      }
+      final numbers = _controller.text
+          .trim()
+          .split(RegExp(r'\s+'))
+          .toSet()
+          .map(int.parse)
+          .toList();
+      for (var i = 0; i < numbers.length; i++) {
+        final nodeA = _a.firstWhere(
+          (node) => node.value == numbers[i],
+          orElse: () {
+            throw Exception('Node with value ${numbers[i]} not found');
+          },
+        );
+        nodeA.isSorted = true;
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.error),
+              const SizedBox(width: 5),
+              Expanded(
+                child: Text(
+                  "Invalid input: $e",
+                  maxLines: 10,
+                  overflow: TextOverflow.clip,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onError,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
+    notifyListeners();
+  }
+
+  void copyStartValues(BuildContext context) {
+    String text = "";
+    if (_original.isNotEmpty) {
+      text = _original.map((node) => node.value.toString()).join(' ');
+    } else {
+      text = _a.map((node) => node.value.toString()).join(' ');
+    }
+    Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const SizedBox(width: 5),
+              Expanded(
+                child: Text(
+                  "Values copied",
+                  maxLines: 10,
+                  overflow: TextOverflow.clip,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Theme.of(context).colorScheme.primary,
+        ),
+      );
   }
 }
 

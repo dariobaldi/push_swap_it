@@ -141,14 +141,14 @@ class MainApp extends StatelessWidget {
                                           onPressed: () {
                                             m.apply("ra");
                                           },
-                                          child: Text("ra↑"),
+                                          child: Icon(Icons.keyboard_arrow_up),
                                         ),
                                         if (m.a.length > 1 && m.b.length > 1)
                                           ElevatedButton(
                                             onPressed: () {
                                               m.apply("rr");
                                             },
-                                            child: Text("rr↑"),
+                                            child: Icon(Icons.keyboard_double_arrow_up),
                                           ),
                                       ],
                                     ),
@@ -164,7 +164,7 @@ class MainApp extends StatelessWidget {
                                               onPressed: () {
                                                 m.apply("sa");
                                               },
-                                              child: Text("sa↕"),
+                                              child: Icon(Icons.swap_vert),
                                             ),
                                           NumberSquare(node: m.a[index]),
                                           if (index == 0)
@@ -172,7 +172,7 @@ class MainApp extends StatelessWidget {
                                               onPressed: () {
                                                 m.apply("pb");
                                               },
-                                              child: Text("pb→"),
+                                              child: Icon(Icons.keyboard_arrow_right),
                                             ),
                                         ],
                                       ),
@@ -187,14 +187,14 @@ class MainApp extends StatelessWidget {
                                           onPressed: () {
                                             m.apply("rra");
                                           },
-                                          child: Text("rra↓"),
+                                          child: Icon(Icons.keyboard_arrow_down),
                                         ),
                                         if (m.a.length > 1 && m.b.length > 1)
                                           ElevatedButton(
                                             onPressed: () {
                                               m.apply("rrr");
                                             },
-                                            child: Text("rrr↓"),
+                                            child: Icon(Icons.keyboard_double_arrow_down),
                                           ),
                                       ],
                                     ),
@@ -216,14 +216,14 @@ class MainApp extends StatelessWidget {
                                           onPressed: () {
                                             m.apply("rb");
                                           },
-                                          child: Text("rb↑"),
+                                          child: Icon(Icons.keyboard_arrow_up),
                                         ),
                                         if (m.a.length > 1 && m.b.length > 1)
                                           ElevatedButton(
                                             onPressed: () {
                                               m.apply("rr");
                                             },
-                                            child: Text("rr↑"),
+                                            child: Icon(Icons.keyboard_double_arrow_up),
                                           ),
                                       ],
                                     ),
@@ -239,7 +239,7 @@ class MainApp extends StatelessWidget {
                                               onPressed: () {
                                                 m.apply("pa");
                                               },
-                                              child: Text("←pa"),
+                                              child: Icon(Icons.keyboard_arrow_left),
                                             ),
                                           NumberSquare(node: m.b[index]),
                                           if (index == 0)
@@ -247,7 +247,7 @@ class MainApp extends StatelessWidget {
                                               onPressed: () {
                                                 m.apply("sb");
                                               },
-                                              child: Text("sb↕"),
+                                              child: Icon(Icons.swap_vert),
                                             ),
                                         ],
                                       ),
@@ -262,14 +262,14 @@ class MainApp extends StatelessWidget {
                                           onPressed: () {
                                             m.apply("rrb");
                                           },
-                                          child: Text("rrb↓"),
+                                          child: Icon(Icons.keyboard_arrow_down),
                                         ),
                                         if (m.a.length > 1 && m.b.length > 1)
                                           ElevatedButton(
                                             onPressed: () {
                                               m.apply("rrr");
                                             },
-                                            child: Text("rrr↓"),
+                                            child: Icon(Icons.keyboard_double_arrow_down),
                                           ),
                                       ],
                                     ),

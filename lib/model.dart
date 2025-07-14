@@ -1,20 +1,24 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:push_swap_it/sort.dart';
+import 'package:http/http.dart' as http;
 
 class Node {
   final int value;
   final int position;
   int order;
   bool isSorted;
+  bool needSwap;
 
   Node({
     required this.value,
     required this.position,
     required this.order,
     this.isSorted = false,
+    this.needSwap = false,
   });
 }
 
@@ -97,6 +101,10 @@ class Model extends ChangeNotifier {
       return;
     }
     _commands.add("sa");
+    if (a[1].isSorted && _a[1].value == _a[0].value - 1) {
+      _a[0].needSwap = false;
+      _a[0].isSorted = true;
+    }
     final buf = _a[0];
     _a[0] = _a[1];
     _a[1] = buf;
@@ -138,6 +146,7 @@ class Model extends ChangeNotifier {
     if (_b.isEmpty) {
       return;
     }
+    _b[0].isSorted = true;
     _commands.add("pa");
     _a.insert(0, _b[0]);
     _b.removeAt(0);
@@ -224,6 +233,7 @@ class Model extends ChangeNotifier {
     _solved = false;
     for (var node in _original) {
       node.isSorted = false;
+      node.needSwap = false;
       _a.add(node);
     }
     notifyListeners();
@@ -245,9 +255,10 @@ class Model extends ChangeNotifier {
   }
 
   void inputText(BuildContext context) {
+    final List<String> lines = _controller.text.split("\n");
     _solved = false;
     try {
-      final numbers = _controller.text
+      final numbers = lines[0]
           .trim()
           .split(RegExp(r'\s+'))
           .toSet()
@@ -291,11 +302,12 @@ class Model extends ChangeNotifier {
   }
 
   void inputSorted(BuildContext context) {
+    final List<String> lines = _controller.text.split("\n");
     try {
       if (_b.isNotEmpty) {
         throw Exception('Stack be must be empty for sorted input');
       }
-      final numbers = _controller.text
+      final numbers = lines[0]
           .trim()
           .split(RegExp(r'\s+'))
           .toSet()
@@ -337,6 +349,133 @@ class Model extends ChangeNotifier {
     notifyListeners();
   }
 
+  void inputSwap(BuildContext context) {
+    final List<String> lines = _controller.text.split("\n");
+    if (lines.length < 2) return;
+    try {
+      if (_b.isNotEmpty) {
+        throw Exception('Stack be must be empty for sorted input');
+      }
+      final numbers = lines[1]
+          .trim()
+          .split(RegExp(r'\s+'))
+          .toSet()
+          .map(int.parse)
+          .toList();
+      for (var i = 0; i < numbers.length; i++) {
+        final nodeA = _a.firstWhere(
+          (node) => node.value == numbers[i],
+          orElse: () {
+            throw Exception('Node with value ${numbers[i]} not found');
+          },
+        );
+        nodeA.needSwap = true;
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.error),
+              const SizedBox(width: 5),
+              Expanded(
+                child: Text(
+                  "Invalid input: $e",
+                  maxLines: 10,
+                  overflow: TextOverflow.clip,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onError,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
+    notifyListeners();
+  }
+
+  void callBridge(BuildContext context) async {
+    try {
+      String args = "";
+      if (_original.isNotEmpty) {
+        args = _original.map((node) => node.value.toString()).join(' ');
+      } else {
+        args = _a.map((node) => node.value.toString()).join(' ');
+      }
+      final response = await apiRequest(
+        'POST',
+        'push_swap',
+        json.encode({'args': args}),
+        {},
+      );
+      if (!context.mounted) {
+        return;
+      }
+      if (response.statusCode == 200) {
+        _controller.text = utf8.decode(response.bodyBytes);
+        inputSorted(context);
+        inputSwap(context);
+      } else {
+        if (!context.mounted) {
+          return;
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error),
+                const SizedBox(width: 5),
+                Expanded(
+                  child: Text(
+                    "Erreur: ${response.body}",
+                    maxLines: 10,
+                    overflow: TextOverflow.clip,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onError,
+                      fontSize: 18,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+        return;
+      }
+    } catch (err) {
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.error),
+              const SizedBox(width: 5),
+              Expanded(
+                child: Text(
+                  "Erreur: $err",
+                  maxLines: 10,
+                  overflow: TextOverflow.clip,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onError,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
+  }
+
   void copyStartValues(BuildContext context) {
     String text = "";
     if (_original.isNotEmpty) {
@@ -346,26 +485,26 @@ class Model extends ChangeNotifier {
     }
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const SizedBox(width: 5),
-              Expanded(
-                child: Text(
-                  "Values copied",
-                  maxLines: 10,
-                  overflow: TextOverflow.clip,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onPrimary,
-                    fontSize: 18,
-                  ),
+      SnackBar(
+        content: Row(
+          children: [
+            const SizedBox(width: 5),
+            Expanded(
+              child: Text(
+                "Values copied",
+                maxLines: 10,
+                overflow: TextOverflow.clip,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onPrimary,
+                  fontSize: 18,
                 ),
               ),
-            ],
-          ),
-          backgroundColor: Theme.of(context).colorScheme.primary,
+            ),
+          ],
         ),
-      );
+        backgroundColor: Theme.of(context).colorScheme.primary,
+      ),
+    );
   }
 }
 
@@ -392,4 +531,30 @@ List<Node> generateUniqueRandomInts({
   }
   sortList(list);
   return list;
+}
+
+Future<http.Response> apiRequest(
+  String method,
+  String endpoint,
+  Object? body,
+  Map<String, dynamic> queryParameters,
+) {
+  final Uri uri = Uri.http("localhost:4221", endpoint, queryParameters);
+
+  final Map<String, String> headers = {};
+
+  switch (method) {
+    case "GET":
+      return http.get(uri, headers: headers);
+    case "PATCH":
+      return http.patch(uri, headers: headers, body: body);
+    case "POST":
+      return http.post(uri, headers: headers, body: body);
+    case "PUT":
+      return http.put(uri, headers: headers, body: body);
+    case "DELETE":
+      return http.delete(uri, headers: headers, body: body);
+    default:
+      return http.get(uri, headers: headers);
+  }
 }

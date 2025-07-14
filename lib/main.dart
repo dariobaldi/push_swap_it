@@ -17,20 +17,21 @@ class MainApp extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: Text("Input Values"),
-        content: TextField(controller: m.controller),
+        content: TextField(controller: m.controller, maxLines: 2),
         actions: [
-          TextButton(
-            onPressed: () {
-              m.inputSorted(context);
-              Navigator.of(context).pop();
-            },
-            child: const Text("Sorted"),
-          ),
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
             },
             child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () {
+              m.inputSorted(context);
+              m.inputSwap(context);
+              Navigator.of(context).pop();
+            },
+            child: const Text("Add Info"),
           ),
           TextButton(
             onPressed: () {
@@ -51,13 +52,32 @@ class MainApp extends StatelessWidget {
         builder: (context, m, child) {
           return Scaffold(
             appBar: AppBar(
+              title: Text("Level ${m.level}"),
               actions: [
+                Padding(
+                  padding: const EdgeInsets.all(3.0),
+                  child: ActionChip(
+                    label: Icon(Icons.input),
+                    onPressed: () {
+                      inputText(context, m);
+                    },
+                  ),
+                ),
                 Padding(
                   padding: const EdgeInsets.all(3.0),
                   child: ActionChip(
                     label: Icon(Icons.copy_all),
                     onPressed: () {
                       m.copyStartValues(context);
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(3.0),
+                  child: ActionChip(
+                    label: Icon(Icons.bug_report),
+                    onPressed: () {
+                      m.callBridge(context);
                     },
                   ),
                 ),
@@ -73,15 +93,6 @@ class MainApp extends StatelessWidget {
                   child: ActionChip(
                     label: Icon(Icons.shuffle),
                     onPressed: m.refresh,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(3.0),
-                  child: ActionChip(
-                    label: Icon(Icons.input),
-                    onPressed: () {
-                      inputText(context, m);
-                    },
                   ),
                 ),
                 Padding(
@@ -121,27 +132,72 @@ class MainApp extends StatelessWidget {
                               child: Column(
                                 children: [
                                   Title(text: "Col A"),
+                                  if (m.a.length > 1)
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            m.apply("ra");
+                                          },
+                                          child: Text("ra↑"),
+                                        ),
+                                        if (m.a.length > 1 && m.b.length > 1)
+                                          ElevatedButton(
+                                            onPressed: () {
+                                              m.apply("rr");
+                                            },
+                                            child: Text("rr↑"),
+                                          ),
+                                      ],
+                                    ),
                                   ...List.generate(m.a.length, (index) {
                                     return Padding(
                                       padding: const EdgeInsets.all(8.0),
                                       child: Row(
-                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
+                                          if (index == 0)
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                m.apply("sa");
+                                              },
+                                              child: Text("sa↕"),
+                                            ),
                                           NumberSquare(node: m.a[index]),
-                                          if (m.debug)
-                                            Padding(
-                                              padding: const EdgeInsets.all(
-                                                8.0,
-                                              ),
-                                              child: Text(
-                                                "${m.a[index].order}-${m.a[index].position} : ${m.a[index].order - m.a[index].position}",
-                                                style: TextStyle(fontSize: 18),
-                                              ),
+                                          if (index == 0)
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                m.apply("pb");
+                                              },
+                                              child: Text("pb→"),
                                             ),
                                         ],
                                       ),
                                     );
                                   }),
+                                  if (m.a.length > 1)
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            m.apply("rra");
+                                          },
+                                          child: Text("rra↓"),
+                                        ),
+                                        if (m.a.length > 1 && m.b.length > 1)
+                                          ElevatedButton(
+                                            onPressed: () {
+                                              m.apply("rrr");
+                                            },
+                                            child: Text("rrr↓"),
+                                          ),
+                                      ],
+                                    ),
                                 ],
                               ),
                             ),
@@ -149,15 +205,74 @@ class MainApp extends StatelessWidget {
                           Expanded(
                             child: SingleChildScrollView(
                               child: Column(
-                                mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
                                   Title(text: "Col B"),
+                                  if (m.b.length > 1)
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            m.apply("rb");
+                                          },
+                                          child: Text("rb↑"),
+                                        ),
+                                        if (m.a.length > 1 && m.b.length > 1)
+                                          ElevatedButton(
+                                            onPressed: () {
+                                              m.apply("rr");
+                                            },
+                                            child: Text("rr↑"),
+                                          ),
+                                      ],
+                                    ),
                                   ...List.generate(m.b.length, (index) {
                                     return Padding(
                                       padding: const EdgeInsets.all(8.0),
-                                      child: NumberSquare(node: m.b[index]),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          if (index == 0)
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                m.apply("pa");
+                                              },
+                                              child: Text("←pa"),
+                                            ),
+                                          NumberSquare(node: m.b[index]),
+                                          if (index == 0)
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                m.apply("sb");
+                                              },
+                                              child: Text("sb↕"),
+                                            ),
+                                        ],
+                                      ),
                                     );
                                   }),
+                                  if (m.b.length > 1)
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            m.apply("rrb");
+                                          },
+                                          child: Text("rrb↓"),
+                                        ),
+                                        if (m.a.length > 1 && m.b.length > 1)
+                                          ElevatedButton(
+                                            onPressed: () {
+                                              m.apply("rrr");
+                                            },
+                                            child: Text("rrr↓"),
+                                          ),
+                                      ],
+                                    ),
                                 ],
                               ),
                             ),
@@ -237,10 +352,15 @@ class NumberSquare extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FloatingActionButton(
-      backgroundColor: (node.isSorted) ? Colors.lightGreen : null,
-      onPressed: () {},
-      child: Text(node.value.toString()),
+    return Stack(
+      children: [
+        FloatingActionButton(
+          backgroundColor: (node.isSorted) ? Colors.lightGreen : null,
+          onPressed: () {},
+          child: Text(node.value.toString()),
+        ),
+        if (node.needSwap) Icon(Icons.swap_vert, color: Colors.red),
+      ],
     );
   }
 }
